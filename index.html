@@ -6,8 +6,18 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/Lab9_Starter/favicon.ico" type="image/x-icon" />
 
-        <script src="index.js"></script>
+        <script src="custom-error.js"></script>
         <title>Lab 9</title>
+
+        <!-- TrackJS Error Tracking -->
+        <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+        <script>
+            window.TrackJS &&
+                TrackJS.install({
+                    token: '6f680717a8764af490f5cf7a20c6031e',
+                    // for more configuration options, see https://docs.trackjs.com
+                });
+        </script>
 
         <style>
             button {
@@ -97,7 +107,49 @@
                 let firstNum = document.querySelector('#first-num').value;
                 let secondNum = document.querySelector('#second-num').value;
                 let operator = document.querySelector('#operator').value;
-                output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+                try {
+                    // check for empty inputs
+                    if (firstNum === '' || secondNum === '') {
+                        throw new CustomError(
+                            'Input values cannot be empty',
+                            'INPUT_ERROR'
+                        );
+                    }
+
+                    // check for non-numeric inputs
+                    if (isNaN(Number(firstNum)) || isNaN(Number(secondNum))) {
+                        throw new CustomError(
+                            'Inputs must be numbers only',
+                            'INVALID_INPUT'
+                        );
+                    }
+
+                    // check for division by zero
+                    if (operator === '/' && secondNum === '0') {
+                        throw new CustomError(
+                            'Cannot divide by zero',
+                            'MATH_ERROR'
+                        );
+                    }
+
+                    output.innerHTML = eval(
+                        `${firstNum} ${operator} ${secondNum}`
+                    );
+                } catch (error) {
+                    if (error instanceof CustomError) {
+                        error.logError();
+                    } else {
+                        console.error('(Unexpected error)', error);
+                        // track error with TrackJS
+                        if (window.TrackJS) {
+                            TrackJS.track('(Unexpected error)', error);
+                        }
+                        console.log('log sent');
+                    }
+                } finally {
+                    console.log('Calculator done');
+                }
             });
 
             let errorBtns = Array.from(
@@ -106,6 +158,113 @@
 
             // Start your code here
             // You may move this JS to another file if you wish
+            errorBtns.forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    const buttonText = btn.textContent;
+
+                    switch (buttonText) {
+                        case 'Console Log':
+                            console.log('Console Log Demo', {
+                                message: 'This is a standard log message',
+                            });
+                            break;
+
+                        case 'Console Error':
+                            console.error(
+                                'Console Error Demo',
+                                'This is an error message'
+                            );
+                            break;
+
+                        case 'Console Count':
+                            console.count('Count Button');
+                            break;
+
+                        case 'Console Warn':
+                            console.warn(
+                                'Console Warn Button',
+                                'This is a warning message'
+                            );
+                            break;
+
+                        case 'Console Assert':
+                            const dummy = 2;
+                            console.assert(
+                                dummy === 3,
+                                'The number does not equal 3'
+                            );
+                            break;
+
+                        case 'Console Clear':
+                            console.clear();
+                            break;
+
+                        case 'Console Dir':
+                            const buttonObj = {
+                                type: 'button',
+                            };
+                            console.dir(buttonObj);
+                            break;
+
+                        case 'Console dirxml':
+                            console.dirxml(btn);
+                            break;
+
+                        case 'Console Group Start':
+                            console.group('console.group');
+                            break;
+
+                        case 'Console Group End':
+                            console.groupEnd();
+                            break;
+
+                        case 'Console Table':
+                            const tableData = [
+                                { name: 'Alice', age: 25, role: 'Developer' },
+                                { name: 'Bob', age: 30, role: 'Designer' },
+                                { name: 'Charlie', age: 35, role: 'Manager' },
+                            ];
+                            console.table(tableData);
+                            break;
+
+                        case 'Start Timer':
+                            console.time('timer');
+                            break;
+
+                        case 'End Timer':
+                            console.timeEnd('timer');
+                            break;
+
+                        case 'Console Trace':
+                            function deep() {
+                                console.trace('console.trace');
+                            }
+                            function deeper() {
+                                deep();
+                            }
+                            function deepest() {
+                                deeper();
+                            }
+                            deepest();
+                            break;
+
+                        case 'Trigger a Global Error':
+                            console.log(boom);
+                            break;
+                    }
+                });
+            });
+
+            // global error handler
+            window.addEventListener('error', (event) => {
+                console.error('(Global error caught)', event.error);
+
+                // track error with TrackJS
+                if (window.TrackJS) {
+                    TrackJS.track('(Global error caught)', event.error);
+                }
+                return true;
+            });
         </script>
     </body>
 </html>
