@@ -1,6 +1,6 @@
 # Lab 9 - Starter
 
-[Github Page](https://phyoth.github.io/Lab9_Starter/)
+[Github Page](https://phyoth.github.io/Lab9_Starter/index.html)
 
 ## Screenshots
 ![trackJSaccount](screenshots/Screenshot%202025-06-02%20at%2011.13.01 PM.png)
